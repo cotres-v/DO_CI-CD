@@ -1,0 +1,62 @@
+stages:
+  - build
+  - code_style
+  - testing
+  - deploy
+
+build_cat-job:
+  stage: build
+  only: 
+    - develop
+  script:
+    - cd src/cat
+    - make s21_cat
+  artifacts:
+    paths:
+      - src/cat/s21_cat
+    expire_in: 30 days
+  
+build_grep-job:
+  stage: build
+  only: 
+    - develop
+  script:
+    - cd src/grep
+    - make s21_grep
+  artifacts:
+    paths:
+      - src/grep/s21_grep
+    expire_in: 30 days
+
+clang_format-job:
+  stage: code_style
+  only: 
+    - develop
+  script:
+    - cd src
+    - clang-format --Werror -n --style=Google cat/*.c grep/*.c
+
+testing_cat-job:
+  stage: testing
+  only: 
+    - develop
+  script:
+    - cd src/cat
+    - bash test_cat.sh
+
+testing_grep-job:
+  stage: testing
+  only: 
+    - develop
+  script:
+    - cd src/grep
+    - bash test_grep.sh
+  when: on_success
+
+deploy-job:
+  stage: deploy
+  only:
+    - develop
+  script:
+    - bash ./src/deploy.sh
+  when: on_success
